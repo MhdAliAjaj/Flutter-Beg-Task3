@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/constants.dart';
-import 'commission_page.dart';
+import '../widgets/social_button.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -15,6 +16,35 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
   bool _rememberMe = false;
 
+  @override
+  void initState() {
+    super.initState();
+    _loadRemembered();
+  }
+
+  Future<void> _loadRemembered() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final bool savedRemember = prefs.getBool('remember_me') ?? false;
+    final String? savedEmail = prefs.getString('saved_email');
+    setState(() {
+      _rememberMe = savedRemember;
+      if (savedRemember && savedEmail != null) {
+        _emailController.text = savedEmail;
+      }
+    });
+  }
+
+  Future<void> _persistRemember() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (_rememberMe) {
+      await prefs.setBool('remember_me', true);
+      await prefs.setString('saved_email', _emailController.text.trim());
+    } else {
+      await prefs.remove('remember_me');
+      await prefs.remove('saved_email');
+    }
+  }
+
   void _login() {
     if (_formKey.currentState!.validate()) {
       // ✅ نجاح
@@ -28,10 +58,8 @@ class _LoginPageState extends State<LoginPage> {
 
       // الانتقال بعد ثانية
       Future.delayed(const Duration(seconds: 1), () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const CommissionPage()),
-        );
+        _persistRemember();
+        Navigator.pushReplacementNamed(context, '/commission');
       });
     } else {
       // ❌ فشل
@@ -168,11 +196,11 @@ class _LoginPageState extends State<LoginPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: const [
-                    CircleAvatar(child: Text("G")),
+                    SocialButton(icon: 'G'),
                     SizedBox(width: 16),
-                    CircleAvatar(child: Text("f")),
+                    SocialButton(icon: 'f'),
                     SizedBox(width: 16),
-                    CircleAvatar(child: Text("")),
+                    SocialButton(icon: ''),
                   ],
                 ),
               ],
@@ -181,5 +209,12 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 }
