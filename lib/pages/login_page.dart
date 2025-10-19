@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../utils/constants.dart';
 import 'commission_page.dart';
+import 'nav_demo_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -26,11 +27,11 @@ class _LoginPageState extends State<LoginPage> {
         ),
       );
 
-      // الانتقال بعد ثانية
+      // الانتقال بعد ثانية إلى عرض شريط التنقل المخصص
       Future.delayed(const Duration(seconds: 1), () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => const CommissionPage()),
+          MaterialPageRoute(builder: (_) => const NavDemoPage()),
         );
       });
     } else {
